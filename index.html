@@ -94,7 +94,7 @@
             let value = rangeObj.value;
             (value > 255)?value=255:(value < 0)?value = 0:leds[2]=value;
             if(ledMatrixStateCharacteristic == null)return;
-            ledMatrixStateCharacteristic.writeValue(leds);
+            ledMatrixStateCharacteristic.writeValue(generateUint8Array());
         }
         function LED() {
             if(ledMatrixStateCharacteristic == null)return;
