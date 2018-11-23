@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>BLE PRACTICE</title>
+</head>
+
+<body>
+    <input type="button" value="Connect" onclick="connect();" />
+    <input type="button" value="disconnect" onclick="disconnect();" />
+    <p id="message">Connect Your Micro:bit Device.</p>
+    <div class="container">
+            <div class="row justify-content-center">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check00">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check01">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check02">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check03">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check04">
+            </div>
+            <div class="row justify-content-center">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check10">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check11">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check12">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check13">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check14">
+            </div>
+            <div class="row justify-content-center">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check20">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check21">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check22">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check23">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check24">
+            </div>
+            <div class="row justify-content-center">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check30">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check31">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check32">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check33">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check34">
+            </div>
+            <div class="row justify-content-center">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check40">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check41">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check42">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check43">
+              <input type="checkbox" class="m-3" onChange="onChangeCheckBox()" name="check44">
+            </div>
+          </div>
+
+          <div class="clidecontener">
+              <input type="range" name="slider" id="slider" min="0" max="255" onchange="onChangeRange()">
+          </div>
+    <script>
+
+        let targetDevice = null;
+        let ledMatrixStateCharacteristic = null;
+
+        let error_msg = {
+            "blt_err1":"Bluetooth API dose not supported."
+        };
+
+        let success_msg = {
+            "connectedGatt":"GATTサーバーに接続しました",
+            "gotPrimaryService":"プライマリサービスの取得に成功しました",
+            "gotCharacteristic":"キャラクタリスティックの取得に成功しました"
+        }
+
+        let messageObj = document.getElementById("message");
+        let rangeObj = document.getElementsByName("slider")[0];
+        
+        const LED_SERVICE = "E95DD91D-251D-470A-A062-FA1922DFA9A8".toLowerCase();
+        const LED_MATRIX_STATE = "E95D7B77-251D-470A-A062-FA1922DFA9A8".toLowerCase();
+
+        const leds = new Uint8Array(5);
+        // leds[0] = 0b01010;
+        // leds[1] = 0b10101;
+        // leds[2] = 0b01010;
+        // leds[3] = 0b10101;
+        // leds[4] = 0b01010;
+        /*function onChangeCheckBox() {
+            if(ledMatrixStateCharacteristic == null)return;
+            ledMatrixStateCharacteristic.writeValue(leds)
+            .catch(error=>{
+                console.log('ERROR!'+error);
+                messageObj.innerText = error;
+                
+            });
+        }*/
+
+        function onChangeRange() {
+            let value = rangeObj.value;
+            (value > 255)?value=255:(value < 0)?value = 0:leds[2]=value;
+            if(ledMatrixStateCharacteristic == null)return;
+            ledMatrixStateCharacteristic.writeValue(leds);
+        }
+        function LED() {
+            if(ledMatrixStateCharacteristic == null)return;
+            ledMatrixStateCharacteristic.writeValue(leds)
+            .catch(error=>{
+                console.log('ERROR!'+error);
+                messageObj.innerText = error;                
+            })
+        }
+        
+       /* function generateUint8Array() {
+            let array = new Uint8Array(5);
+
+            for (let row = 0; row < 5; row++) {
+                let value = 0;
+                for (let index = 0; index < 5; index++) {
+                    value = value << 1;
+                    if(document.getElementsByName("check"+row+index)[0].checked){
+                        value += 1;
+                    }                    
+                }
+                array[row] = value;
+            }
+            return array;
+        }
+        */
+        
+        
+        function connect() {
+            if (!navigator.bluetooth) {
+                document.getElementById("message").innerText = error_msg.blt_err1;
+                return;
+            }
+            navigator.bluetooth.requestDevice({
+                filters:[
+                    {
+                        services:[LED_SERVICE]
+                    },
+                    {
+                        namePrefix:"BBC micro:bit"
+                    }
+                ]
+            })
+                .then(device => {
+                    console.log('>Name:' + device.name);
+                    targetDevice = device;
+                    device.gatt.connect(targetDevice)
+                    .then(server =>{
+                        console.log(success_msg.connectedGatt);
+                        messageObj.innerText = success_msg.connectedGatt;
+                        server.getPrimaryService(LED_SERVICE)
+                        .then(service=>{
+                            console.log(success_msg.gotPrimaryService);
+                            messageObj.innerText = success_msg.gotPrimaryService;                            
+                            service.getCharacteristic(LED_MATRIX_STATE)
+                            .then(characteristic=>{
+                                console.log(success_msg.gotCharacteristic);   
+                                messageObj.innerText = success_msg.gotCharacteristic;                             
+                                ledMatrixStateCharacteristic = characteristic;
+                                ledMatrixStateCharacteristic.writeValue(new Uint8Array(5))
+                                .then(
+                                    e=>{
+                                        LED();
+                                    }
+                                )
+                                .catch(error=>{
+                                    console.log('ERROR!'+error);                                    
+                                });
+                            })
+                            .catch(error=>{
+                                console.log('ERROR!'+error);                                
+                            });
+                        })
+                        .catch(error=>{
+                            console.log('ERROR!'+error);
+                        })
+                    })
+                    .catch(error=>{
+                        console.log('ERROR!' + error);
+                    })
+
+                    
+                })
+                .catch(error => {
+                    console.log('ERROR!' + error);
+                });
+        }
+
+        function disconnect() {
+            if (!navigator.bluetooth) {
+                messageObj.innerText = error_msg.blt_err1;
+                return;
+            }
+            if(targetDevice == null){
+                console.log('target device is null.');
+                messageObj.innerText = "target device is null";
+                return;
+            }
+            targetDevice.gatt.disconnect();
+            targetDevice = null;
+            ledMatrixStateCharacteristic = null;
+        }
+    </script>
+</body>
+
+</html>
