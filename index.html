@@ -80,7 +80,7 @@
         // leds[2] = 0b01010;
         // leds[3] = 0b10101;
         // leds[4] = 0b01010;
-        /*function onChangeCheckBox() {
+        function onChangeCheckBox() {
             if(ledMatrixStateCharacteristic == null)return;
             ledMatrixStateCharacteristic.writeValue(leds)
             .catch(error=>{
@@ -88,7 +88,7 @@
                 messageObj.innerText = error;
                 
             });
-        }*/
+        }
 
         function onChangeRange() {
             let value = rangeObj.value;
@@ -105,7 +105,7 @@
             })
         }
         
-       /* function generateUint8Array() {
+        function generateUint8Array() {
             let array = new Uint8Array(5);
 
             for (let row = 0; row < 5; row++) {
@@ -120,7 +120,7 @@
             }
             return array;
         }
-        */
+        
         
         
         function connect() {
