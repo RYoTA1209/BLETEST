@@ -82,7 +82,7 @@
         // leds[4] = 0b01010;
         function onChangeCheckBox() {
             if(ledMatrixStateCharacteristic == null)return;
-            ledMatrixStateCharacteristic.writeValue(leds)
+            ledMatrixStateCharacteristic.writeValue(generateUint8Array());
             .catch(error=>{
                 console.log('ERROR!'+error);
                 messageObj.innerText = error;
@@ -94,7 +94,7 @@
             let value = rangeObj.value;
             (value > 255)?value=255:(value < 0)?value = 0:leds[2]=value;
             if(ledMatrixStateCharacteristic == null)return;
-            ledMatrixStateCharacteristic.writeValue(generateUint8Array());
+            ledMatrixStateCharacteristic.writeValue(leds);
         }
         function LED() {
             if(ledMatrixStateCharacteristic == null)return;
